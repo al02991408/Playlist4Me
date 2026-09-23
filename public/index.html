@@ -1,2 +1,94 @@
 <!DOCTYPE html>
-<html><body><h2>Playlist4Me Funcionando</h2></body></html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Playlist4Me - Panel de Pruebas MVP</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background: #f4f4f9; color: #333; }
+        .container { max-width: 600px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin: auto; }
+        h2 { color: #1db954; }
+        .box { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background: #fafafa; }
+        input, select, button { display: block; width: 100%; margin: 8px 0; padding: 10px; box-sizing: border-box; }
+        button { background: #1db954; color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        button:hover { background: #1aa34a; }
+        pre { background: #272822; color: #f8f8f2; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Playlist4Me - Pruebas de MVP</h2>
+        
+        <div class="box">
+            <h3>1. Registro de Usuario</h3>
+            <input type="text" id="regUser" placeholder="Usuario">
+            <input type="password" id="regPass" placeholder="Contraseña">
+            <select id="regRole">
+                <option value="usuario">Rol: Usuario</option>
+                <option value="administrador">Rol: Administrador</option>
+            </select>
+            <button onclick="registrar()">Registrar</button>
+        </div>
+
+        <div class="box">
+            <h3>2. Inicio de Sesión (Genera Token JWT)</h3>
+            <input type="text" id="loginUser" placeholder="Usuario">
+            <input type="password" id="loginPass" placeholder="Contraseña">
+            <button onclick="login()">Iniciar Sesión</button>
+        </div>
+
+        <div class="box">
+            <h3>3. Probar Funciones / Roles Protegidos</h3>
+            <button onclick="probarRuta('/api/conversiones')">Probar Conversión (Usuario o Admin)</button>
+            <button onclick="probarRuta('/api/admin/metricas')">Probar Métricas (Solo Administrador)</button>
+        </div>
+
+        <div class="box">
+            <h3>Respuesta del Servidor:</h3>
+            <pre id="output">Realiza una acción para probar las funciones...</pre>
+        </div>
+    </div>
+
+    <script>
+        let tokenJWT = '';
+
+        async function registrar() {
+            const res = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: document.getElementById('regUser').value,
+                    password: document.getElementById('regPass').value,
+                    role: document.getElementById('regRole').value
+                })
+            });
+            const data = await res.json();
+            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function login() {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: document.getElementById('loginUser').value,
+                    password: document.getElementById('loginPass').value
+                })
+            });
+            const data = await res.json();
+            if (data.token) {
+                tokenJWT = data.token;
+                data.mensajeToken = "¡Token JWT guardado automáticamente para las pruebas!";
+            }
+            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function probarRuta(url) {
+            const res = await fetch(url, {
+                headers: { 'Authorization': 'Bearer ' + tokenJWT }
+            });
+            const data = await res.json();
+            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+        }
+    </script>
+</body>
+</html>
