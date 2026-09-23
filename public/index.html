@@ -2,54 +2,198 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Playlist4Me - Panel de Pruebas MVP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playlist4Me | App</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 30px; background: #f4f4f9; color: #333; }
-        .container { max-width: 600px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin: auto; }
-        h2 { color: #1db954; }
-        .box { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background: #fafafa; }
-        input, select, button { display: block; width: 100%; margin: 8px 0; padding: 10px; box-sizing: border-box; }
-        button { background: #1db954; color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; }
-        button:hover { background: #1aa34a; }
-        pre { background: #272822; color: #f8f8f2; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        :root {
+            --primary: #1db954;
+            --bg-dark: #121212;
+            --bg-panel: #282828;
+            --text-main: #ffffff;
+            --text-muted: #b3b3b3;
+            --danger: #e22134;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        header {
+            width: 100%;
+            padding: 20px 0;
+            text-align: center;
+            background-color: #000;
+            border-bottom: 1px solid #333;
+            margin-bottom: 30px;
+        }
+        h1 { margin: 0; color: var(--primary); letter-spacing: -1px; }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            display: grid;
+            gap: 20px;
+        }
+        .card {
+            background: var(--bg-panel);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .card h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #444; padding-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: var(--text-muted); font-size: 0.9rem; }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            background: #3e3e3e;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus { outline: none; border-color: var(--primary); }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.1s, background 0.2s;
+        }
+        button:hover { background-color: #1ed760; transform: scale(1.02); }
+        button.secondary { background-color: transparent; border: 1px solid #555; }
+        button.secondary:hover { border-color: white; }
+        
+        /* Layout de columnas */
+        .auth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        /* Consola de API */
+        .api-console { background: #000; padding: 15px; border-radius: 5px; font-family: monospace; color: #0f0; overflow-x: auto; font-size: 0.85rem; height: 120px;}
+        
+        /* Vistas dinámicas */
+        #appView, #adminView { display: none; }
+        .hidden { display: none !important; }
+
+        @media (max-width: 600px) {
+            .auth-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
+
+    <header>
+        <h1>Playlist4Me</h1>
+        <p style="color: var(--text-muted); margin: 5px 0 0 0; font-size: 0.9rem;">Plataforma de migración de metadatos</p>
+    </header>
+
     <div class="container">
-        <h2>Playlist4Me - Pruebas de MVP</h2>
         
-        <div class="box">
-            <h3>1. Registro de Usuario</h3>
-            <input type="text" id="regUser" placeholder="Usuario">
-            <input type="password" id="regPass" placeholder="Contraseña">
-            <select id="regRole">
-                <option value="usuario">Rol: Usuario</option>
-                <option value="administrador">Rol: Administrador</option>
-            </select>
-            <button onclick="registrar()">Registrar</button>
+        <!-- Vista de Autenticación -->
+        <div id="authView" class="auth-grid">
+            <div class="card">
+                <h2>Iniciar Sesión</h2>
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <input type="text" id="loginUser" placeholder="ej. usuario1">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="loginPass" placeholder="••••••••">
+                </div>
+                <button onclick="login()">Entrar al Sistema</button>
+            </div>
+
+            <div class="card">
+                <h2>Nuevo Registro</h2>
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <input type="text" id="regUser">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="regPass">
+                </div>
+                <div class="form-group">
+                    <label>Rol de Sistema</label>
+                    <select id="regRole">
+                        <option value="usuario">Usuario Estándar</option>
+                        <option value="administrador">Administrador de Operaciones</option>
+                    </select>
+                </div>
+                <button class="secondary" onclick="registrar()">Crear Cuenta</button>
+            </div>
         </div>
 
-        <div class="box">
-            <h3>2. Inicio de Sesión (Genera Token JWT)</h3>
-            <input type="text" id="loginUser" placeholder="Usuario">
-            <input type="password" id="loginPass" placeholder="Contraseña">
-            <button onclick="login()">Iniciar Sesión</button>
+        <!-- Vista Principal de la App (Protegida) -->
+        <div id="appView" class="card">
+            <h2>Módulo de Conversión de Playlists</h2>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="flex: 2;">
+                    <label>URL de Origen (Spotify, Apple Music, etc.)</label>
+                    <input type="url" id="playlistUrl" placeholder="https://open.spotify.com/playlist/..." oninput="validarUrl()">
+                    <small id="urlError" style="color: var(--danger); display: none;">URL no válida. Ingrese un enlace seguro (https).</small>
+                </div>
+                <div style="flex: 1;">
+                    <label>Plataforma Destino</label>
+                    <select id="destPlatform">
+                        <option>YouTube Music</option>
+                        <option>Apple Music</option>
+                        <option>Tidal</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="iniciarConversion()" id="btnConvertir">Validar y Comenzar Transferencia</button>
         </div>
 
-        <div class="box">
-            <h3>3. Probar Funciones / Roles Protegidos</h3>
-            <button onclick="probarRuta('/api/conversiones')">Probar Conversión (Usuario o Admin)</button>
-            <button onclick="probarRuta('/api/admin/metricas')">Probar Métricas (Solo Administrador)</button>
+        <!-- Vista de Administrador (Protegida) -->
+        <div id="adminView" class="card">
+            <h2>Panel de Métricas (Solo Administradores)</h2>
+            <p style="font-size: 0.9rem; color: var(--text-muted);">Auditoría operativa y monitoreo de integraciones API.</p>
+            <button class="secondary" onclick="obtenerMetricas()">Generar Reporte de Métricas del Sistema</button>
         </div>
 
-        <div class="box">
-            <h3>Respuesta del Servidor:</h3>
-            <pre id="output">Realiza una acción para probar las funciones...</pre>
+        <!-- Consola de Resultados API -->
+        <div class="card" style="padding: 15px;">
+            <h2 style="font-size: 1rem; border: none; margin-bottom: 5px;">Trazabilidad del Backend (JWT & API)</h2>
+            <div class="api-console" id="output">// Esperando peticiones al servidor...</div>
         </div>
+
     </div>
 
     <script>
-        let tokenJWT = '';
+        let currentUser = { token: null, role: null };
+
+        function log(data) {
+            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+        }
+
+        function validarUrl() {
+            const urlInput = document.getElementById('playlistUrl').value;
+            const error = document.getElementById('urlError');
+            if (urlInput.length > 0 && !urlInput.startsWith('https://')) {
+                error.style.display = 'block';
+            } else {
+                error.style.display = 'none';
+            }
+        }
+
+        function actualizarInterfaz() {
+            if (currentUser.token) {
+                document.getElementById('authView').classList.add('hidden');
+                document.getElementById('appView').style.display = 'block';
+                if (currentUser.role === 'administrador') {
+                    document.getElementById('adminView').style.display = 'block';
+                }
+            }
+        }
 
         async function registrar() {
             const res = await fetch('/api/register', {
@@ -61,8 +205,7 @@
                     role: document.getElementById('regRole').value
                 })
             });
-            const data = await res.json();
-            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+            log(await res.json());
         }
 
         async function login() {
@@ -75,19 +218,44 @@
                 })
             });
             const data = await res.json();
+            
             if (data.token) {
-                tokenJWT = data.token;
-                data.mensajeToken = "¡Token JWT guardado automáticamente para las pruebas!";
+                currentUser.token = data.token;
+                // Extraer el rol del token JWT (Decodificación simple de la carga útil)
+                const payloadBase64 = data.token.split('.')[1];
+                const decodedPayload = JSON.parse(atob(payloadBase64));
+                currentUser.role = decodedPayload.role;
+                
+                data._info = `Autenticado exitosamente como ${currentUser.role}. JWT almacenado en memoria cliente.`;
+                actualizarInterfaz();
             }
-            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+            log(data);
         }
 
-        async function probarRuta(url) {
-            const res = await fetch(url, {
-                headers: { 'Authorization': 'Bearer ' + tokenJWT }
+        async function iniciarConversion() {
+            const urlInput = document.getElementById('playlistUrl').value;
+            if (!urlInput.startsWith('https://')) {
+                log({ error: "Validación de seguridad falló: La URL debe ser HTTPS." });
+                return;
+            }
+            
+            log({ status: "Procesando...", mensaje: "Llamando al middleware con JWT..." });
+            
+            const res = await fetch('/api/conversiones', {
+                headers: { 'Authorization': 'Bearer ' + currentUser.token }
             });
             const data = await res.json();
-            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+            // Simulamos la latencia de la lectura de metadatos mencionada en el reporte
+            setTimeout(() => {
+                log(data);
+            }, 800);
+        }
+
+        async function obtenerMetricas() {
+            const res = await fetch('/api/admin/metricas', {
+                headers: { 'Authorization': 'Bearer ' + currentUser.token }
+            });
+            log(await res.json());
         }
     </script>
 </body>
