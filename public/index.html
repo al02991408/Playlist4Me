@@ -12,79 +12,38 @@
             --text-main: #ffffff;
             --text-muted: #b3b3b3;
             --danger: #e22134;
+            --warning: #ffb86c;
         }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-        header {
-            width: 100%;
-            padding: 20px 0;
-            text-align: center;
-            background-color: #000;
-            border-bottom: 1px solid #333;
-            margin-bottom: 30px;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        header { width: 100%; padding: 20px 0; text-align: center; background-color: #000; border-bottom: 1px solid #333; margin-bottom: 30px; }
         h1 { margin: 0; color: var(--primary); letter-spacing: -1px; }
-        .container {
-            width: 90%;
-            max-width: 800px;
-            display: grid;
-            gap: 20px;
-        }
-        .card {
-            background: var(--bg-panel);
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
+        .container { width: 90%; max-width: 850px; display: grid; gap: 20px; padding-bottom: 40px; }
+        .card { background: var(--bg-panel); padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .card h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #444; padding-bottom: 10px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; color: var(--text-muted); font-size: 0.9rem; }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            background: #3e3e3e;
-            border: 1px solid #555;
-            color: white;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
+        input, select { width: 100%; padding: 10px; background: #3e3e3e; border: 1px solid #555; color: white; border-radius: 4px; box-sizing: border-box; }
         input:focus, select:focus { outline: none; border-color: var(--primary); }
-        button {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            transition: transform 0.1s, background 0.2s;
-        }
+        button { background-color: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; width: 100%; transition: transform 0.1s; }
         button:hover { background-color: #1ed760; transform: scale(1.02); }
         button.secondary { background-color: transparent; border: 1px solid #555; }
         button.secondary:hover { border-color: white; }
         
-        /* Layout de columnas */
         .auth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        
-        /* Consola de API */
-        .api-console { background: #000; padding: 15px; border-radius: 5px; font-family: monospace; color: #0f0; overflow-x: auto; font-size: 0.85rem; height: 120px;}
-        
-        /* Vistas dinámicas */
-        #appView, #adminView { display: none; }
+        .api-console { background: #000; padding: 15px; border-radius: 5px; font-family: monospace; color: #0f0; overflow-x: auto; font-size: 0.85rem; height: 100px;}
         .hidden { display: none !important; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #444; }
+        th { color: var(--text-muted); font-weight: normal; }
+        .status-exact { color: var(--primary); font-weight: bold; }
+        .status-approx { color: var(--warning); font-weight: bold; }
+        .status-missing { color: var(--danger); font-weight: bold; }
+        
+        .progress-container { width: 100%; background-color: #444; border-radius: 10px; margin: 20px 0; overflow: hidden; display: none; }
+        .progress-bar { width: 0%; height: 10px; background-color: var(--primary); transition: width 0.5s; }
 
-        @media (max-width: 600px) {
-            .auth-grid { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 600px) { .auth-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -96,114 +55,141 @@
 
     <div class="container">
         
-        <!-- Vista de Autenticación -->
         <div id="authView" class="auth-grid">
             <div class="card">
                 <h2>Iniciar Sesión</h2>
-                <div class="form-group">
-                    <label>Usuario</label>
-                    <input type="text" id="loginUser" placeholder="ej. usuario1">
-                </div>
-                <div class="form-group">
-                    <label>Contraseña</label>
-                    <input type="password" id="loginPass" placeholder="••••••••">
-                </div>
+                <input type="text" id="loginUser" placeholder="Usuario" class="form-group">
+                <input type="password" id="loginPass" placeholder="Contraseña" class="form-group">
                 <button onclick="login()">Entrar al Sistema</button>
             </div>
-
             <div class="card">
                 <h2>Nuevo Registro</h2>
-                <div class="form-group">
-                    <label>Usuario</label>
-                    <input type="text" id="regUser">
-                </div>
-                <div class="form-group">
-                    <label>Contraseña</label>
-                    <input type="password" id="regPass">
-                </div>
-                <div class="form-group">
-                    <label>Rol de Sistema</label>
-                    <select id="regRole">
-                        <option value="usuario">Usuario Estándar</option>
-                        <option value="administrador">Administrador de Operaciones</option>
-                    </select>
-                </div>
+                <input type="text" id="regUser" placeholder="Usuario" class="form-group">
+                <input type="password" id="regPass" placeholder="Contraseña" class="form-group">
+                <select id="regRole" class="form-group">
+                    <option value="usuario">Usuario Estándar</option>
+                    <option value="administrador">Administrador de Operaciones</option>
+                </select>
                 <button class="secondary" onclick="registrar()">Crear Cuenta</button>
             </div>
         </div>
 
-        <!-- Vista Principal de la App (Protegida) -->
-        <div id="appView" class="card">
+        <div id="appView" class="card hidden">
             <h2>Módulo de Conversión de Playlists</h2>
-            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <div style="flex: 2;">
-                    <label>URL de Origen (Spotify, Apple Music, etc.)</label>
-                    <input type="url" id="playlistUrl" placeholder="https://open.spotify.com/playlist/..." oninput="validarUrl()">
-                    <small id="urlError" style="color: var(--danger); display: none;">URL no válida. Ingrese un enlace seguro (https).</small>
+            
+            <div id="inputSection">
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <div style="flex: 2;">
+                        <label>URL de Origen</label>
+                        <input type="url" id="playlistUrl" value="https://open.spotify.com/playlist/mi_playlist_ejemplo">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Plataforma Destino</label>
+                        <select id="destPlatform"><option>Apple Music</option><option>YouTube Music</option></select>
+                    </div>
                 </div>
-                <div style="flex: 1;">
-                    <label>Plataforma Destino</label>
-                    <select id="destPlatform">
-                        <option>YouTube Music</option>
-                        <option>Apple Music</option>
-                        <option>Tidal</option>
-                    </select>
-                </div>
+                <button onclick="iniciarConversion()">Iniciar Escaneo y Mapeo</button>
             </div>
-            <button onclick="iniciarConversion()" id="btnConvertir">Validar y Comenzar Transferencia</button>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+
+            <div id="resultsSection" class="hidden">
+                <h3 style="margin-top: 0; color: var(--primary);">Resultados del Mapeo</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Revisión de metadatos completada. Valide las coincidencias antes de generar la playlist destino.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Canción Origen</th>
+                            <th>Artista</th>
+                            <th>Estado en Destino</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Rush</td>
+                            <td>Troye Sivan</td>
+                            <td class="status-exact">Coincidencia Exacta</td>
+                            <td><button class="secondary" style="padding: 5px 10px; width: auto;" disabled>Confirmado</button></td>
+                        </tr>
+                        <tr>
+                            <td>ID</td>
+                            <td>Young Miko, Jowell & Randy</td>
+                            <td class="status-exact">Coincidencia Exacta</td>
+                            <td><button class="secondary" style="padding: 5px 10px; width: auto;" disabled>Confirmado</button></td>
+                        </tr>
+                        <tr>
+                            <td>Brinca</td>
+                            <td>Cazzu, Young Miko</td>
+                            <td class="status-exact">Coincidencia Exacta</td>
+                            <td><button class="secondary" style="padding: 5px 10px; width: auto;" disabled>Confirmado</button></td>
+                        </tr>
+                        <tr>
+                            <td>Te Dejo Madrid</td>
+                            <td>Shakira</td>
+                            <td class="status-exact">Coincidencia Exacta</td>
+                            <td><button class="secondary" style="padding: 5px 10px; width: auto;" disabled>Confirmado</button></td>
+                        </tr>
+                        <tr>
+                            <td>Amsterdam</td>
+                            <td>Nothing But Thieves</td>
+                            <td class="status-exact">Coincidencia Exacta</td>
+                            <td><button class="secondary" style="padding: 5px 10px; width: auto;" disabled>Confirmado</button></td>
+                        </tr>
+                        <tr>
+                            <td>Fake ID (Coke & Rum Remix)</td>
+                            <td>Rilton, Kah-Lo, GEE LEE</td>
+                            <td class="status-approx">Aproximada (Remix)</td>
+                            <td><button class="secondary" style="padding: 5px 10px; width: auto;">Revisar</button></td>
+                        </tr>
+                        <tr>
+                            <td>NOCHE DE SATEO</td>
+                            <td>Taichu</td>
+                            <td class="status-missing">No Encontrada</td>
+                            <td><button class="secondary" style="padding: 5px 10px; width: auto;">Búsqueda Manual</button></td>
+                        </tr>
+                        <tr>
+                            <td>Self Control</td>
+                            <td>Frank Ocean</td>
+                            <td class="status-exact">Coincidencia Exacta</td>
+                            <td><button class="secondary" style="padding: 5px 10px; width: auto;" disabled>Confirmado</button></td>
+                        </tr>
+                        <tr>
+                            <td>Santé</td>
+                            <td>Stromae</td>
+                            <td class="status-exact">Coincidencia Exacta</td>
+                            <td><button class="secondary" style="padding: 5px 10px; width: auto;" disabled>Confirmado</button></td>
+                        </tr>
+                        <tr>
+                            <td>Liebe?</td>
+                            <td>ok.danke.tschüss</td>
+                            <td class="status-exact">Coincidencia Exacta</td>
+                            <td><button class="secondary" style="padding: 5px 10px; width: auto;" disabled>Confirmado</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button style="margin-top: 20px;">Confirmar y Crear Playlist en Destino</button>
+            </div>
         </div>
 
-        <!-- Vista de Administrador (Protegida) -->
-        <div id="adminView" class="card">
-            <h2>Panel de Métricas (Solo Administradores)</h2>
-            <p style="font-size: 0.9rem; color: var(--text-muted);">Auditoría operativa y monitoreo de integraciones API.</p>
-            <button class="secondary" onclick="obtenerMetricas()">Generar Reporte de Métricas del Sistema</button>
-        </div>
-
-        <!-- Consola de Resultados API -->
         <div class="card" style="padding: 15px;">
-            <h2 style="font-size: 1rem; border: none; margin-bottom: 5px;">Trazabilidad del Backend (JWT & API)</h2>
-            <div class="api-console" id="output">// Esperando peticiones al servidor...</div>
+            <h2 style="font-size: 1rem; border: none; margin-bottom: 5px;">Consola JWT / API</h2>
+            <div class="api-console" id="output">// Esperando acciones...</div>
         </div>
-
     </div>
 
     <script>
-        let currentUser = { token: null, role: null };
+        let currentUser = { token: null };
 
-        function log(data) {
-            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
-        }
-
-        function validarUrl() {
-            const urlInput = document.getElementById('playlistUrl').value;
-            const error = document.getElementById('urlError');
-            if (urlInput.length > 0 && !urlInput.startsWith('https://')) {
-                error.style.display = 'block';
-            } else {
-                error.style.display = 'none';
-            }
-        }
-
-        function actualizarInterfaz() {
-            if (currentUser.token) {
-                document.getElementById('authView').classList.add('hidden');
-                document.getElementById('appView').style.display = 'block';
-                if (currentUser.role === 'administrador') {
-                    document.getElementById('adminView').style.display = 'block';
-                }
-            }
-        }
+        function log(data) { document.getElementById('output').textContent = JSON.stringify(data, null, 2); }
 
         async function registrar() {
             const res = await fetch('/api/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: document.getElementById('regUser').value,
-                    password: document.getElementById('regPass').value,
-                    role: document.getElementById('regRole').value
-                })
+                body: JSON.stringify({ username: document.getElementById('regUser').value, password: document.getElementById('regPass').value, role: document.getElementById('regRole').value })
             });
             log(await res.json());
         }
@@ -212,50 +198,45 @@
             const res = await fetch('/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: document.getElementById('loginUser').value,
-                    password: document.getElementById('loginPass').value
-                })
+                body: JSON.stringify({ username: document.getElementById('loginUser').value, password: document.getElementById('loginPass').value })
             });
             const data = await res.json();
-            
             if (data.token) {
                 currentUser.token = data.token;
-                // Extraer el rol del token JWT (Decodificación simple de la carga útil)
-                const payloadBase64 = data.token.split('.')[1];
-                const decodedPayload = JSON.parse(atob(payloadBase64));
-                currentUser.role = decodedPayload.role;
-                
-                data._info = `Autenticado exitosamente como ${currentUser.role}. JWT almacenado en memoria cliente.`;
-                actualizarInterfaz();
+                document.getElementById('authView').classList.add('hidden');
+                document.getElementById('appView').classList.remove('hidden');
+                log({ status: "Autenticado", token: "JWT guardado en memoria cliente" });
+            } else {
+                log(data);
             }
-            log(data);
         }
 
         async function iniciarConversion() {
-            const urlInput = document.getElementById('playlistUrl').value;
-            if (!urlInput.startsWith('https://')) {
-                log({ error: "Validación de seguridad falló: La URL debe ser HTTPS." });
-                return;
+            log({ status: "Conectando al backend con JWT...", endpoint: "/api/conversiones" });
+            
+            const res = await fetch('/api/conversiones', { headers: { 'Authorization': 'Bearer ' + currentUser.token } });
+            
+            if(res.ok) {
+                document.getElementById('inputSection').classList.add('hidden');
+                document.getElementById('progressContainer').style.display = 'block';
+                
+                let bar = document.getElementById('progressBar');
+                let width = 0;
+                let interval = setInterval(() => {
+                    if (width >= 100) {
+                        clearInterval(interval);
+                        document.getElementById('progressContainer').style.display = 'none';
+                        document.getElementById('resultsSection').classList.remove('hidden');
+                        log({ status: 200, message: "Mapeo de metadatos finalizado exitosamente." });
+                    } else {
+                        width += 20;
+                        bar.style.width = width + '%';
+                        log({ status: "Procesando", progreso: width + "%" });
+                    }
+                }, 300);
+            } else {
+                log(await res.json());
             }
-            
-            log({ status: "Procesando...", mensaje: "Llamando al middleware con JWT..." });
-            
-            const res = await fetch('/api/conversiones', {
-                headers: { 'Authorization': 'Bearer ' + currentUser.token }
-            });
-            const data = await res.json();
-            // Simulamos la latencia de la lectura de metadatos mencionada en el reporte
-            setTimeout(() => {
-                log(data);
-            }, 800);
-        }
-
-        async function obtenerMetricas() {
-            const res = await fetch('/api/admin/metricas', {
-                headers: { 'Authorization': 'Bearer ' + currentUser.token }
-            });
-            log(await res.json());
         }
     </script>
 </body>
