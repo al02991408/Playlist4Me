@@ -13,11 +13,12 @@
             --text-muted: #b3b3b3;
             --danger: #e22134;
             --warning: #ffb86c;
+            --info: #3ba9fe;
         }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 40px; }
         header { width: 100%; padding: 20px 0; text-align: center; background-color: #000; border-bottom: 1px solid #333; margin-bottom: 30px; }
         h1 { margin: 0; color: var(--primary); letter-spacing: -1px; }
-        .container { width: 90%; max-width: 850px; display: grid; gap: 20px; padding-bottom: 40px; }
+        .container { width: 90%; max-width: 900px; display: grid; gap: 20px; }
         .card { background: var(--bg-panel); padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .card h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #444; padding-bottom: 10px; }
         .form-group { margin-bottom: 15px; }
@@ -28,11 +29,21 @@
         button:hover { background-color: #1ed760; transform: scale(1.02); }
         button.secondary { background-color: transparent; border: 1px solid #555; }
         button.secondary:hover { border-color: white; }
+        button:disabled { background-color: #555; cursor: not-allowed; transform: none; }
         
         .auth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .api-console { background: #000; padding: 15px; border-radius: 5px; font-family: monospace; color: #0f0; overflow-x: auto; font-size: 0.85rem; height: 100px;}
         .hidden { display: none !important; }
         
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; text-align: center; }
+        .stat-box { background: #1e1e1e; padding: 15px; border-radius: 6px; border-bottom: 3px solid #444; }
+        .stat-box.success { border-color: var(--primary); }
+        .stat-box.warning { border-color: var(--warning); }
+        .stat-box.danger { border-color: var(--danger); }
+        .stat-box h3 { margin: 0; font-size: 1.8rem; }
+        .stat-box small { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
         th, td { text-align: left; padding: 12px; border-bottom: 1px solid #444; }
         th { color: var(--text-muted); font-weight: normal; }
@@ -41,202 +52,226 @@
         .status-missing { color: var(--danger); font-weight: bold; }
         
         .progress-container { width: 100%; background-color: #444; border-radius: 10px; margin: 20px 0; overflow: hidden; display: none; }
-        .progress-bar { width: 0%; height: 10px; background-color: var(--primary); transition: width 0.5s; }
+        .progress-bar { width: 0%; height: 10px; background-color: var(--info); transition: width 0.5s; }
 
-        @media (max-width: 600px) { .auth-grid { grid-template-columns: 1fr; } }
+        /* Toast Notifications */
+        #toastContainer { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: #282828; color: white; padding: 15px 20px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); border-left: 4px solid var(--primary); min-width: 250px; font-size: 0.9rem; animation: slideIn 0.3s ease-out forwards; }
+        .toast.error { border-left-color: var(--danger); }
+        .toast.info { border-left-color: var(--info); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        @media (max-width: 600px) { .auth-grid { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: 1fr 1fr; } }
     </style>
 </head>
 <body>
 
+    <div id="toastContainer"></div>
+
     <header>
         <h1>Playlist4Me</h1>
-        <p style="color: var(--text-muted); margin: 5px 0 0 0; font-size: 0.9rem;">Plataforma de migración de metadatos</p>
+        <p style="color: var(--text-muted); margin: 5px 0 0 0; font-size: 0.9rem;">Core Transformation Engine v1.0</p>
     </header>
 
     <div class="container">
         
         <div id="authView" class="auth-grid">
             <div class="card">
-                <h2>Iniciar Sesión</h2>
-                <input type="text" id="loginUser" placeholder="Usuario" class="form-group">
-                <input type="password" id="loginPass" placeholder="Contraseña" class="form-group">
-                <button onclick="login()">Entrar al Sistema</button>
+                <h2>Acceso Seguro</h2>
+                <input type="text" id="loginUser" placeholder="Usuario ID" class="form-group">
+                <input type="password" id="loginPass" placeholder="Credenciales" class="form-group">
+                <button onclick="login()">Iniciar Sesión</button>
             </div>
             <div class="card">
-                <h2>Nuevo Registro</h2>
-                <input type="text" id="regUser" placeholder="Usuario" class="form-group">
+                <h2>Alta de Operador</h2>
+                <input type="text" id="regUser" placeholder="Nuevo Usuario" class="form-group">
                 <input type="password" id="regPass" placeholder="Contraseña" class="form-group">
                 <select id="regRole" class="form-group">
-                    <option value="usuario">Usuario Estándar</option>
-                    <option value="administrador">Administrador de Operaciones</option>
+                    <option value="usuario">Perfil: Analista de Datos</option>
+                    <option value="administrador">Perfil: SysAdmin</option>
                 </select>
-                <button class="secondary" onclick="registrar()">Crear Cuenta</button>
+                <button class="secondary" onclick="registrar()">Registrar en Base de Datos</button>
             </div>
         </div>
 
         <div id="appView" class="card hidden">
-            <h2>Módulo de Conversión de Playlists</h2>
+            <h2>Panel de Transferencia de Metadatos</h2>
             
             <div id="inputSection">
-                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                    <div style="flex: 2;">
-                        <label>URL de Origen</label>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <div style="flex: 2; min-width: 250px;">
+                        <label>URI / Enlace de Origen</label>
                         <input type="url" id="playlistUrl" value="https://open.spotify.com/playlist/mi_playlist_ejemplo">
                     </div>
-                    <div style="flex: 1;">
-                        <label>Plataforma Destino</label>
-                        <select id="destPlatform"><option>Apple Music</option><option>YouTube Music</option></select>
+                    <div style="flex: 1; min-width: 150px;">
+                        <label>Entorno Destino</label>
+                        <select id="destPlatform"><option>Apple Music API</option><option>YouTube Data API v3</option></select>
                     </div>
                 </div>
-                <button onclick="iniciarConversion()">Iniciar Escaneo y Mapeo</button>
+                <button onclick="iniciarConversion()">Ejecutar Pipeline de Conversión</button>
             </div>
 
             <div class="progress-container" id="progressContainer">
                 <div class="progress-bar" id="progressBar"></div>
+                <p id="progressText" style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">Conectando con adaptador de origen...</p>
             </div>
 
             <div id="resultsSection" class="hidden">
-                <h3 style="margin-top: 0; color: var(--primary);">Resultados del Mapeo</h3>
-                <p style="font-size: 0.85rem; color: var(--text-muted);">Revisión de metadatos completada. Valide las coincidencias antes de generar la playlist destino.</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 10px;">
+                    <h3 style="margin: 0; color: var(--primary);">Reporte de Mapeo</h3>
+                    <span style="font-size: 0.8rem; background: #333; padding: 5px 10px; border-radius: 12px; color: var(--info);">Job ID: #P4M-99823</span>
+                </div>
+
+                <!-- Panel de Estadísticas -->
+                <div class="stats-grid">
+                    <div class="stat-box"><h3>10</h3><small>Pistas Leídas</small></div>
+                    <div class="stat-box success"><h3>8</h3><small>Match Exacto</small></div>
+                    <div class="stat-box warning"><h3>1</h3><small>Aproximada</small></div>
+                    <div class="stat-box danger"><h3>1</h3><small>Huérfana</small></div>
+                </div>
+
                 <table>
                     <thead>
                         <tr>
-                            <th>Canción Origen</th>
-                            <th>Artista</th>
-                            <th>Estado en Destino</th>
-                            <th>Acción</th>
+                            <th>Pista Origen</th>
+                            <th>Metadatos Artista</th>
+                            <th>Nivel de Confianza</th>
+                            <th>Resolución</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Rush</td>
-                            <td>Troye Sivan</td>
-                            <td class="status-exact">Coincidencia Exacta</td>
-                            <td><button class="secondary" style="padding: 5px 10px; width: auto;" disabled>Confirmado</button></td>
-                        </tr>
-                        <tr>
-                            <td>ID</td>
-                            <td>Young Miko, Jowell & Randy</td>
-                            <td class="status-exact">Coincidencia Exacta</td>
-                            <td><button class="secondary" style="padding: 5px 10px; width: auto;" disabled>Confirmado</button></td>
-                        </tr>
-                        <tr>
-                            <td>Brinca</td>
-                            <td>Cazzu, Young Miko</td>
-                            <td class="status-exact">Coincidencia Exacta</td>
-                            <td><button class="secondary" style="padding: 5px 10px; width: auto;" disabled>Confirmado</button></td>
-                        </tr>
-                        <tr>
-                            <td>Te Dejo Madrid</td>
-                            <td>Shakira</td>
-                            <td class="status-exact">Coincidencia Exacta</td>
-                            <td><button class="secondary" style="padding: 5px 10px; width: auto;" disabled>Confirmado</button></td>
-                        </tr>
-                        <tr>
-                            <td>Amsterdam</td>
-                            <td>Nothing But Thieves</td>
-                            <td class="status-exact">Coincidencia Exacta</td>
-                            <td><button class="secondary" style="padding: 5px 10px; width: auto;" disabled>Confirmado</button></td>
-                        </tr>
-                        <tr>
-                            <td>Fake ID (Coke & Rum Remix)</td>
-                            <td>Rilton, Kah-Lo, GEE LEE</td>
-                            <td class="status-approx">Aproximada (Remix)</td>
-                            <td><button class="secondary" style="padding: 5px 10px; width: auto;">Revisar</button></td>
-                        </tr>
-                        <tr>
-                            <td>NOCHE DE SATEO</td>
-                            <td>Taichu</td>
-                            <td class="status-missing">No Encontrada</td>
-                            <td><button class="secondary" style="padding: 5px 10px; width: auto;">Búsqueda Manual</button></td>
-                        </tr>
-                        <tr>
-                            <td>Self Control</td>
-                            <td>Frank Ocean</td>
-                            <td class="status-exact">Coincidencia Exacta</td>
-                            <td><button class="secondary" style="padding: 5px 10px; width: auto;" disabled>Confirmado</button></td>
-                        </tr>
-                        <tr>
-                            <td>Santé</td>
-                            <td>Stromae</td>
-                            <td class="status-exact">Coincidencia Exacta</td>
-                            <td><button class="secondary" style="padding: 5px 10px; width: auto;" disabled>Confirmado</button></td>
-                        </tr>
-                        <tr>
-                            <td>Liebe?</td>
-                            <td>ok.danke.tschüss</td>
-                            <td class="status-exact">Coincidencia Exacta</td>
-                            <td><button class="secondary" style="padding: 5px 10px; width: auto;" disabled>Confirmado</button></td>
-                        </tr>
+                        <tr><td>Rush</td><td>Troye Sivan</td><td class="status-exact">100% - Identidad Confirmada</td><td><button class="secondary" disabled>Automático</button></td></tr>
+                        <tr><td>ID</td><td>Young Miko, Jowell & Randy</td><td class="status-exact">100% - Identidad Confirmada</td><td><button class="secondary" disabled>Automático</button></td></tr>
+                        <tr><td>Brinca</td><td>Cazzu, Young Miko</td><td class="status-exact">100% - Identidad Confirmada</td><td><button class="secondary" disabled>Automático</button></td></tr>
+                        <tr><td>Te Dejo Madrid</td><td>Shakira</td><td class="status-exact">100% - Identidad Confirmada</td><td><button class="secondary" disabled>Automático</button></td></tr>
+                        <tr><td>Amsterdam</td><td>Nothing But Thieves</td><td class="status-exact">100% - Identidad Confirmada</td><td><button class="secondary" disabled>Automático</button></td></tr>
+                        <tr><td>Fake ID (Coke & Rum Remix)</td><td>Rilton, Kah-Lo...</td><td class="status-approx">75% - Falla en sufijo (Remix)</td><td><button class="secondary" style="border-color: var(--warning); color: var(--warning);">Forzar Match</button></td></tr>
+                        <tr><td>NOCHE DE SATEO</td><td>Taichu</td><td class="status-missing">0% - Timeout de API destino</td><td><button class="secondary" style="border-color: var(--danger); color: var(--danger);">Omitir</button></td></tr>
+                        <tr><td>Self Control</td><td>Frank Ocean</td><td class="status-exact">100% - Identidad Confirmada</td><td><button class="secondary" disabled>Automático</button></td></tr>
+                        <tr><td>Santé</td><td>Stromae</td><td class="status-exact">100% - Identidad Confirmada</td><td><button class="secondary" disabled>Automático</button></td></tr>
+                        <tr><td>Liebe?</td><td>ok.danke.tschüss</td><td class="status-exact">100% - Identidad Confirmada</td><td><button class="secondary" disabled>Automático</button></td></tr>
                     </tbody>
                 </table>
-                <button style="margin-top: 20px;">Confirmar y Crear Playlist en Destino</button>
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button class="secondary" style="flex: 1;" onclick="mostrarToast('Descargando CSV...', 'info')">Exportar Log (.csv)</button>
+                    <button id="btnFinalizar" style="flex: 2;" onclick="finalizarPlaylist()">Construir Playlist en Destino</button>
+                </div>
             </div>
         </div>
 
         <div class="card" style="padding: 15px;">
-            <h2 style="font-size: 1rem; border: none; margin-bottom: 5px;">Consola JWT / API</h2>
-            <div class="api-console" id="output">// Esperando acciones...</div>
+            <h2 style="font-size: 1rem; border: none; margin-bottom: 5px; display: flex; justify-content: space-between;">
+                <span>Consola de Depuración (Logs)</span>
+                <span style="color: #0f0; font-size: 0.8rem;">● En línea</span>
+            </h2>
+            <div class="api-console" id="output">Initialize Playlist4Me System v1.0...<br>Awaiting authentication payload...</div>
         </div>
     </div>
 
     <script>
         let currentUser = { token: null };
 
-        function log(data) { document.getElementById('output').textContent = JSON.stringify(data, null, 2); }
+        function log(msg) { 
+            const out = document.getElementById('output');
+            const time = new Date().toLocaleTimeString();
+            out.innerHTML += `<br>[${time}] ${msg}`;
+            out.scrollTop = out.scrollHeight;
+        }
+
+        function mostrarToast(mensaje, tipo = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${tipo}`;
+            toast.textContent = mensaje;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
 
         async function registrar() {
+            const user = document.getElementById('regUser').value;
             const res = await fetch('/api/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: document.getElementById('regUser').value, password: document.getElementById('regPass').value, role: document.getElementById('regRole').value })
+                body: JSON.stringify({ username: user, password: document.getElementById('regPass').value, role: document.getElementById('regRole').value })
             });
-            log(await res.json());
+            if(res.status === 201) {
+                mostrarToast('Usuario registrado en Base de Datos');
+                log(`POST /api/register - 201 Created (${user})`);
+            } else {
+                mostrarToast('Error al registrar', 'error');
+            }
         }
 
         async function login() {
+            const user = document.getElementById('loginUser').value;
             const res = await fetch('/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: document.getElementById('loginUser').value, password: document.getElementById('loginPass').value })
+                body: JSON.stringify({ username: user, password: document.getElementById('loginPass').value })
             });
             const data = await res.json();
             if (data.token) {
                 currentUser.token = data.token;
                 document.getElementById('authView').classList.add('hidden');
                 document.getElementById('appView').classList.remove('hidden');
-                log({ status: "Autenticado", token: "JWT guardado en memoria cliente" });
+                mostrarToast('Sesión validada exitosamente');
+                log(`POST /api/login - 200 OK. Generando JWT token...`);
+                log(`SYS: Acceso concedido para la sesión actual.`);
             } else {
-                log(data);
+                mostrarToast('Credenciales incorrectas', 'error');
+                log(`POST /api/login - 401 Unauthorized`);
             }
         }
 
         async function iniciarConversion() {
-            log({ status: "Conectando al backend con JWT...", endpoint: "/api/conversiones" });
+            mostrarToast('Iniciando pipeline de migración...', 'info');
+            log(`GET /api/conversiones - Autorizando con Bearer Token...`);
             
             const res = await fetch('/api/conversiones', { headers: { 'Authorization': 'Bearer ' + currentUser.token } });
             
             if(res.ok) {
+                log(`SYS: Autorización exitosa. Token válido.`);
                 document.getElementById('inputSection').classList.add('hidden');
                 document.getElementById('progressContainer').style.display = 'block';
                 
                 let bar = document.getElementById('progressBar');
+                let text = document.getElementById('progressText');
                 let width = 0;
+                
                 let interval = setInterval(() => {
                     if (width >= 100) {
                         clearInterval(interval);
                         document.getElementById('progressContainer').style.display = 'none';
                         document.getElementById('resultsSection').classList.remove('hidden');
-                        log({ status: 200, message: "Mapeo de metadatos finalizado exitosamente." });
+                        mostrarToast('Mapeo completado');
+                        log(`SYS: Pipeline finalizado. 10 elementos procesados.`);
                     } else {
-                        width += 20;
+                        width += 25;
                         bar.style.width = width + '%';
-                        log({ status: "Procesando", progreso: width + "%" });
+                        if(width === 25) text.textContent = "Extrayendo metadatos del proveedor (Rate Limit OK)...";
+                        if(width === 50) text.textContent = "Ejecutando heurística de similitud...";
+                        if(width === 75) text.textContent = "Resolviendo discrepancias de catálogo...";
                     }
-                }, 300);
+                }, 600);
             } else {
-                log(await res.json());
+                mostrarToast('Acceso denegado por el servidor', 'error');
             }
+        }
+
+        function finalizarPlaylist() {
+            const btn = document.getElementById('btnFinalizar');
+            btn.disabled = true;
+            btn.textContent = "Construyendo (10/10)...";
+            log(`POST /api/export - Solicitando inyección en plataforma destino...`);
+            
+            setTimeout(() => {
+                mostrarToast('¡Playlist migrada con éxito!');
+                btn.textContent = "Migración Exitosa";
+                btn.style.backgroundColor = "transparent";
+                btn.style.border = "1px solid var(--primary)";
+                btn.style.color = "var(--primary)";
+                log(`SYS: 200 OK - Playlist generada. Ciclo finalizado.`);
+            }, 1500);
         }
     </script>
 </body>
